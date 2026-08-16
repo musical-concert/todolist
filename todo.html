@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>une liste de tâches ☕</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: "M PLUS Rounded 1c", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #f5f0eb;
+            min-height: 100vh;
+            margin: 0;
+            padding: 30px 15px;
+            color: #4a3b32;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 28px 22px;
+            box-shadow: 0 10px 25px rgba(100, 80, 70, 0.06);
+            animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            height: fit-content;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.92) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        h1 {
+            text-align: center;
+            color: #70523e;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+        }
+
+        /* 達成率プログレスバー */
+        .progress-box {
+            background: #faf6f0;
+            border-radius: 18px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            border: 1px solid #ebe2d8;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: bold;
+            color: #70523e;
+            margin-bottom: 8px;
+        }
+        .progress-bar-bg {
+            background: #e8dfd8;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            background: #a07855;
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        /* 動物の褒め言葉エリア */
+        .pet-praise {
+            background: #fff;
+            border: 1.5px dashed #d7ccc8;
+            border-radius: 16px;
+            padding: 10px 12px;
+            text-align: center;
+            font-weight: 600;
+            color: #8c6d58;
+            margin-bottom: 16px;
+            font-size: 13px;
+            transition: transform 0.2s;
+        }
+
+        /* テンプレートエリア */
+        .template-section {
+            margin-bottom: 16px;
+            background: #faf6f0;
+            padding: 12px;
+            border-radius: 18px;
+        }
+        .template-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .template-title {
+            font-size: 12px;
+            color: #8c6d58;
+            font-weight: bold;
+        }
+        .tpl-toggle-edit {
+            background: none;
+            border: none;
+            color: #a07855;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .template-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .tpl-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #ffffff;
+            border: 1px solid #e0d5c9;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 12px;
+            color: #5c4333;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .tpl-chip:hover {
+            background: #70523e;
+            color: #fff;
+            border-color: #70523e;
+        }
+        .tpl-edit-btn, .tpl-del-btn {
+            font-size: 10px;
+            padding: 0 3px;
+            color: #999;
+        }
+        .tpl-edit-btn:hover { color: #a07855; }
+        .tpl-del-btn:hover { color: #d63031; }
+
+        .add-tpl-btn {
+            background: #e8dfd8;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #70523e;
+            cursor: pointer;
+        }
+
+        /* 入力エリア */
+        .input-group {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        input[type="text"] {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px 14px;
+            border: 1.5px solid #e8dfd8;
+            border-radius: 14px;
+            font-size: 13px;
+            outline: none;
+            background: #faf6f0;
+            color: #4a3b32;
+        }
+        input[type="text"]:focus {
+            border-color: #a07855;
+            background: #ffffff;
+        }
+        select {
+            padding: 10px 8px;
+            border: 1.5px solid #e8dfd8;
+            border-radius: 14px;
+            font-size: 12px;
+            background: #faf6f0;
+            color: #5c4333;
+            outline: none;
+            cursor: pointer;
+        }
+        .add-btn {
+            padding: 10px 16px;
+            background-color: #70523e;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .add-btn:hover { background-color: #5b402e; }
+
+        /* カテゴリ・カード設定 */
+        .task-card {
+            background: #faf6f0;
+            border-radius: 18px;
+            padding: 14px;
+            border: 1px solid #ebe2d8;
+            margin-bottom: 16px;
+        }
+        .category-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #70523e;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* タブ切り替えボタン */
+        .tab-switch {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            background: #e8dfd8;
+            padding: 3px;
+            border-radius: 14px;
+        }
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 6px 10px;
+            border-radius: 11px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #8c6d58;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            color: #70523e;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        /* タスクリスト */
+        ul { list-style: none; padding: 0; margin: 0; }
+        .hidden-list { display: none; }
+        li {
+            background: #ffffff;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #f0e8e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+        li span {
+            cursor: pointer;
+            flex: 1;
+            font-size: 13px;
+            word-break: break-all;
+        }
+        li.completed {
+            background: #f5f0eb;
+            text-decoration: line-through;
+            color: #b0a398;
+            border-color: #e8dfd8;
+        }
+        .delete-btn {
+            background-color: transparent;
+            color: #c4aead;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-btn:hover { color: #d63031; }
+
+        /* タイムスケジュール メモ */
+        .schedule-memo-box {
+            margin-top: 10px;
+            background: #faf6f0;
+            border-radius: 18px;
+            padding: 14px;
+            border: 1px solid #ebe2d8;
+        }
+        .memo-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #70523e;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .memo-saved-text {
+            font-size: 10px;
+            color: #a07855;
+            font-weight: normal;
+        }
+        textarea {
+            width: 100%;
+            height: 90px;
+            border: 1.5px solid #e8dfd8;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 12px;
+            color: #4a3b32;
+            background: #ffffff;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+        textarea:focus { border-color: #a07855; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>à faire ☕</h1>
+
+        <!-- 達成率表示 -->
+        <div class="progress-box">
+            <div class="progress-info">
+                <span id="progressMsg">☕ à votre rythme</span>
+                <span id="percentText">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- 動物の褒め言葉エリア -->
+        <div class="pet-praise" id="praiseBox">
+            🐶「今日もゆっくりがんばろうね」
+        </div>
+
+        <!-- テンプレートエリア -->
+        <div class="template-section">
+            <div class="template-header">
+                <span class="template-title">✨ modèles</span>
+                <button class="tpl-toggle-edit" id="editToggleBtn" onclick="toggleEditMode()">modifier</button>
+            </div>
+            <div class="template-buttons" id="templateList"></div>
+        </div>
+
+        <!-- タスク入力 -->
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Nouveau projet...">
+            <select id="categorySelect">
+                <option value="daily">☀️ au quotidien</option>
+                <option value="weekly">📅 jours spécifiques</option>
+                <option value="weekend">🎈 le week-end</option>
+            </select>
+            <button class="add-btn" onclick="addTask()">ajouter</button>
+        </div>
+
+        <!-- ① 毎日すること -->
+        <div class="task-card">
+            <div class="category-title">☀️ au quotidien</div>
+            <ul id="dailyList"></ul>
+        </div>
+
+        <!-- ② 切り替えエリア（特定の曜日 / 週末） -->
+        <div class="task-card">
+            <div class="tab-switch">
+                <button class="tab-btn active" id="tabWeekly" onclick="switchTab('weekly')">📅 jours spécifiques</button>
+                <button class="tab-btn" id="tabWeekend" onclick="switchTab('weekend')">🎈 le week-end</button>
+            </div>
+            <ul id="weeklyList"></ul>
+            <ul id="weekendList" class="hidden-list"></ul>
+        </div>
+
+        <!-- タイムスケジュール メモ -->
+        <div class="schedule-memo-box">
+            <div class="memo-title">
+                <span>⏳ mon planning</span>
+                <span class="memo-saved-text" id="memoSavedStatus">enregistré</span>
+            </div>
+            <textarea id="scheduleMemo" placeholder="08:00 Café&#10;10:00 Reading&#10;14:00 Shopping" oninput="saveMemo()"></textarea>
+        </div>
+    </div>
+
+    <script>
+        let templates = ["☕ Café time", "🧹 Ménage", "📖 Lecture"];
+        let isEditMode = false;
+        let currentTab = 'weekly';
+
+        const praises = [
+            "🐶『すごーい！ひとつクリアだね！』",
+            "🐱『さすが！素晴らしい集中力！』",
+            "🐻『順調、順調！その調子♪』",
+            "🐰『完璧！がんばり屋さんだね！』",
+            "🐥『やったね！気持ちもスッキリ！』",
+            "🐼『えらいっ！自分にご褒美あげてね！』"
+        ];
+
+        renderTemplates();
+        loadMemo();
+
+        function renderTemplates() {
+            const container = document.getElementById('templateList');
+            container.innerHTML = '';
+
+            templates.forEach((tpl, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'tpl-chip';
+                
+                if (isEditMode) {
+                    chip.innerHTML = `
+                        <span>${tpl}</span>
+                        <span class="tpl-edit-btn" onclick="editTemplate(${index}, event)">✏️</span>
+                        <span class="tpl-del-btn" onclick="deleteTemplate(${index}, event)">✕</span>
+                    `;
+                } else {
+                    chip.innerText = tpl;
+                    chip.onclick = () => addTask(tpl);
+                }
+                container.appendChild(chip);
+            });
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-tpl-btn';
+            addBtn.innerText = '+ ajouter';
+            addBtn.onclick = addNewTemplate;
+            container.appendChild(addBtn);
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.getElementById('editToggleBtn').innerText = isEditMode ? 'valider' : 'modifier';
+            renderTemplates();
+        }
+
+        function addNewTemplate() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim() || prompt('Nom du modèle:');
+            if (text) {
+                templates.push(text);
+                input.value = '';
+                renderTemplates();
+            }
+        }
+
+        function editTemplate(index, event) {
+            event.stopPropagation();
+            const newText = prompt('Modifier:', templates[index]);
+            if (newText && newText.trim()) {
+                templates[index] = newText.trim();
+                renderTemplates();
+            }
+        }
+
+        function deleteTemplate(index, event) {
+            event.stopPropagation();
+            templates.splice(index, 1);
+            renderTemplates();
+        }
+
+        function addTask(textValue = null) {
+            const input = document.getElementById('taskInput');
+            const categorySelect = document.getElementById('categorySelect');
+            const text = textValue || input.value.trim();
+            if (!text) return;
+
+            const category = categorySelect.value;
+            let targetListId = 'dailyList';
+            if (category === 'weekly') {
+                targetListId = 'weeklyList';
+                switchTab('weekly');
+            }
+            if (category === 'weekend') {
+                targetListId = 'weekendList';
+                switchTab('weekend');
+            }
+
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span onclick="toggleTask(this)">${text}</span>
+                <button class="delete-btn" onclick="deleteTask(this)">✕</button>
+            `;
+            document.getElementById(targetListId).appendChild(li);
+
+            if (!textValue) input.value = '';
+
+            updateProgress();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const weeklyList = document.getElementById('weeklyList');
+            const weekendList = document.getElementById('weekendList');
+            const tabWeekly = document.getElementById('tabWeekly');
+            const tabWeekend = document.getElementById('tabWeekend');
+
+            if (tab === 'weekly') {
+                weeklyList.classList.remove('hidden-list');
+                weekendList.classList.add('hidden-list');
+                tabWeekly.classList.add('active');
+                tabWeekend.classList.remove('active');
+            } else {
+                weeklyList.classList.add('hidden-list');
+                weekendList.classList.remove('hidden-list');
+                tabWeekly.classList.remove('active');
+                tabWeekend.classList.add('active');
+            }
+        }
+
+        function toggleTask(span) {
+            const li = span.parentElement;
+            li.classList.toggle('completed');
+
+            if (li.classList.contains('completed')) {
+                const randomPraise = praises[Math.floor(Math.random() * praises.length)];
+                const praiseBox = document.getElementById('praiseBox');
+                praiseBox.innerText = randomPraise;
+                praiseBox.style.transform = 'scale(1.03)';
+                setTimeout(() => praiseBox.style.transform = 'scale(1)', 200);
+            }
+
+            updateProgress();
+        }
+
+        function deleteTask(btn) {
+            btn.parentElement.remove();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const allTasks = document.querySelectorAll('ul li');
+            const completedTasks = document.querySelectorAll('ul li.completed');
+
+            const total = allTasks.length;
+            const completed = completedTasks.length;
+
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('percentText').innerText = percent + '%';
+
+            const msgEl = document.getElementById('progressMsg');
+            if (total === 0) {
+                msgEl.innerText = '☕ à votre rythme';
+            } else if (percent === 100) {
+                msgEl.innerText = '🎉 tout est fait !';
+            } else if (percent >= 50) {
+                msgEl.innerText = '✨ à mi-chemin !';
+            } else {
+                msgEl.innerText = '🐾 un pas à la fois';
+            }
+        }
+
+        function saveMemo() {
+            const memoText = document.getElementById('scheduleMemo').value;
+            localStorage.setItem('todo_schedule_memo', memoText);
+            
+            const status = document.getElementById('memoSavedStatus');
+            status.innerText = '...';
+            setTimeout(() => { status.innerText = 'enregistré'; }, 400);
+        }
+
+        function loadMemo() {
+            const saved = localStorage.getItem('todo_schedule_memo');
+            if (saved !== null) {
+                document.getElementById('scheduleMemo').value = saved;
+            }
+        }
+    </script>
+</body>
+</html>
