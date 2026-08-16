@@ -554,10 +554,8 @@
         updateStreakUI();
         handleCategoryChange('daily');
 
-        // 定期的に23:00通知チェック（1分ごと）
         setInterval(check23PMNotification, 60000);
 
-        // --- カテゴリ変更時の曜日選択制御 ---
         function handleCategoryChange(val) {
             const daySelect = document.getElementById('daySelect');
             if (val === 'weekly') {
@@ -828,14 +826,28 @@
             });
         }
 
-        // --- 通知メッセージランダム生成（3種類） ---
-        function getRandomNotificationMsg(taskName) {
-            const templates = [
-                `「${taskName}」をやり忘れているよ！頑張ろう！☕`,
-                `まだ「${taskName}」が終わってないみたい！ファイト〜！✨`,
-                `あともう少し！「${taskName}」をクリアしてスッキリ寝ようね！🌙`
-            ];
-            return templates[Math.floor(Math.random() * templates.length)];
+        // --- 通知メッセージランダム生成（単数・複数対応＆「」なし） ---
+        function getRandomNotificationMsg(uncompletedTasks) {
+            const count = uncompletedTasks.length;
+            if (count === 0) return "すべてのタスクが完了しています！お見事！☕";
+
+            const firstName = uncompletedTasks[0].text;
+
+            if (count === 1) {
+                const singleTemplates = [
+                    `${firstName} をやり忘れているよ！頑張ろう！☕`,
+                    `まだ ${firstName} が終わっていないみたい！ファイト〜！✨`,
+                    `あともう少し！ ${firstName} をクリアしてスッキリ寝ようね！🌙`
+                ];
+                return singleTemplates[Math.floor(Math.random() * singleTemplates.length)];
+            } else {
+                const multiTemplates = [
+                    `${firstName} など ${count}個のタスクを終わらせよう！☕`,
+                    `まだ ${firstName} など ${count}個のタスクが残っているよ！クリアしよう！✨`,
+                    `あともう少し！ ${firstName} など ${count}個のタスクをクリアしてスッキリ寝ようね！🌙`
+                ];
+                return multiTemplates[Math.floor(Math.random() * multiTemplates.length)];
+            }
         }
 
         // --- 23:00 自動通知チェック ---
@@ -845,14 +857,12 @@
             const minutes = now.getMinutes();
             const todayStr = getLogicalDate(now);
 
-            // 23:00 に未達成タスクがあるかチェック
             if (hours === 23 && minutes === 0) {
                 const lastNotified = localStorage.getItem('app_last_notified_23pm');
                 if (lastNotified !== todayStr) {
                     const uncompleted = getUncompletedTasksForToday();
                     if (uncompleted.length > 0) {
-                        const targetTaskText = uncompleted[0].text;
-                        const msg = getRandomNotificationMsg(targetTaskText);
+                        const msg = getRandomNotificationMsg(uncompleted);
                         sendNotification(msg);
                         localStorage.setItem('app_last_notified_23pm', todayStr);
                     }
@@ -861,7 +871,7 @@
         }
 
         function sendNotification(msgText) {
-            showToast(`liste de tâches ☕\n${msgText}`);
+            showToast(msgText);
 
             if ("Notification" in window && Notification.permission === "granted") {
                 new Notification("liste de tâches ☕", {
@@ -874,13 +884,17 @@
         // --- 通知デモ実行 ---
         function triggerNotificationDemo() {
             const uncompleted = getUncompletedTasksForToday();
-            let sampleTaskText = "カフェで勉強";
-            
-            if (uncompleted.length > 0) {
-                sampleTaskText = uncompleted[0].text;
+            let demoTasks = uncompleted;
+
+            if (demoTasks.length === 0) {
+                demoTasks = [
+                    { text: "カフェで勉強" },
+                    { text: "お部屋の掃除" },
+                    { text: "読書" }
+                ];
             }
 
-            const msg = getRandomNotificationMsg(sampleTaskText);
+            const msg = getRandomNotificationMsg(demoTasks);
 
             if ("Notification" in window && Notification.permission !== "denied") {
                 Notification.requestPermission().then(permission => {
