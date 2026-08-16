@@ -241,6 +241,7 @@
             color: #5c4333;
             outline: none;
             cursor: pointer;
+            max-width: 45%;
         }
         .add-btn {
             flex: 1;
@@ -252,6 +253,7 @@
             cursor: pointer;
             font-size: 12.5px;
             font-weight: bold;
+            white-space: nowrap;
         }
         .add-btn:hover { background-color: #5b402e; }
 
@@ -561,19 +563,19 @@
             if (val === 'weekly') {
                 daySelect.style.display = 'inline-block';
                 daySelect.innerHTML = `
-                    <option value="月">月曜日 (Lun)</option>
-                    <option value="火">火曜日 (Mar)</option>
-                    <option value="水">水曜日 (Mer)</option>
-                    <option value="木">木曜日 (Jeu)</option>
-                    <option value="金">金曜日 (Ven)</option>
-                    <option value="土">土曜日 (Sam)</option>
-                    <option value="日">日曜日 (Dim)</option>
+                    <option value="月">月曜日</option>
+                    <option value="火">火曜日</option>
+                    <option value="水">水曜日</option>
+                    <option value="木">木曜日</option>
+                    <option value="金">金曜日</option>
+                    <option value="土">土曜日</option>
+                    <option value="日">日曜日</option>
                 `;
             } else if (val === 'weekend') {
                 daySelect.style.display = 'inline-block';
                 daySelect.innerHTML = `
-                    <option value="土">土曜日 (Sam)</option>
-                    <option value="日">日曜日 (Dim)</option>
+                    <option value="土">土曜日</option>
+                    <option value="日">日曜日</option>
                 `;
             } else {
                 daySelect.style.display = 'none';
@@ -812,7 +814,6 @@
             }, 4500);
         }
 
-        // --- 本日やるべき未達成タスクの取得 ---
         function getUncompletedTasksForToday() {
             const days = ["日", "月", "火", "水", "木", "金", "土"];
             const todayName = days[new Date().getDay()];
@@ -826,7 +827,6 @@
             });
         }
 
-        // --- 通知メッセージランダム生成（単数・複数対応＆「」なし） ---
         function getRandomNotificationMsg(uncompletedTasks) {
             const count = uncompletedTasks.length;
             if (count === 0) return "すべてのタスクが完了しています！お見事！☕";
@@ -850,7 +850,6 @@
             }
         }
 
-        // --- 23:00 自動通知チェック ---
         function check23PMNotification() {
             const now = new Date();
             const hours = now.getHours();
@@ -881,7 +880,6 @@
             }
         }
 
-        // --- 通知デモ実行 ---
         function triggerNotificationDemo() {
             const uncompleted = getUncompletedTasksForToday();
             let demoTasks = uncompleted;
