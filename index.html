@@ -2,6 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <!-- 検索エンジンにヒットしない設定 -->
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>une liste de tâches ☕</title>
     <style>
@@ -11,7 +13,7 @@
             background-color: #f5f0eb;
             min-height: 100vh;
             margin: 0;
-            padding: 30px 15px;
+            padding: 25px 15px;
             color: #4a3b32;
             display: flex;
             justify-content: center;
@@ -19,10 +21,10 @@
 
         .container {
             width: 100%;
-            max-width: 450px;
+            max-width: 460px;
             background: #ffffff;
             border-radius: 28px;
-            padding: 28px 22px;
+            padding: 24px 20px;
             box-shadow: 0 10px 25px rgba(100, 80, 70, 0.06);
             animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             height: fit-content;
@@ -33,42 +35,62 @@
             100% { transform: scale(1) translateY(0); opacity: 1; }
         }
 
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
         h1 {
-            text-align: center;
             color: #70523e;
-            font-size: 24px;
-            letter-spacing: 2px;
-            margin: 0 0 16px 0;
+            font-size: 20px;
+            letter-spacing: 1px;
+            margin: 0;
             font-weight: 700;
+        }
+
+        /* 連続達成日数バッジ */
+        .streak-badge {
+            background: #fff8e7;
+            border: 1px solid #f3e5ab;
+            color: #d68910;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         /* 達成率プログレスバー */
         .progress-box {
             background: #faf6f0;
             border-radius: 18px;
-            padding: 14px 16px;
-            margin-bottom: 14px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
             border: 1px solid #ebe2d8;
         }
         .progress-info {
             display: flex;
             justify-content: space-between;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #70523e;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .progress-bar-bg {
             background: #e8dfd8;
-            height: 10px;
-            border-radius: 10px;
+            height: 8px;
+            border-radius: 8px;
             overflow: hidden;
         }
         .progress-bar-fill {
             background: #a07855;
             height: 100%;
             width: 0%;
-            border-radius: 10px;
+            border-radius: 8px;
             transition: width 0.4s ease;
         }
 
@@ -81,26 +103,26 @@
             text-align: center;
             font-weight: 600;
             color: #8c6d58;
-            margin-bottom: 16px;
-            font-size: 13px;
+            margin-bottom: 14px;
+            font-size: 12.5px;
             transition: transform 0.2s;
         }
 
-        /* テンプレートエリア */
+        /* テンプレートエリア（日本語対応） */
         .template-section {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             background: #faf6f0;
-            padding: 12px;
-            border-radius: 18px;
+            padding: 10px 12px;
+            border-radius: 16px;
         }
         .template-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .template-title {
-            font-size: 12px;
+            font-size: 11px;
             color: #8c6d58;
             font-weight: bold;
         }
@@ -108,7 +130,7 @@
             background: none;
             border: none;
             color: #a07855;
-            font-size: 11px;
+            font-size: 10px;
             cursor: pointer;
             text-decoration: underline;
         }
@@ -123,9 +145,9 @@
             gap: 4px;
             background: #ffffff;
             border: 1px solid #e0d5c9;
-            border-radius: 20px;
-            padding: 5px 12px;
-            font-size: 12px;
+            border-radius: 18px;
+            padding: 4px 10px;
+            font-size: 11.5px;
             color: #5c4333;
             cursor: pointer;
             transition: all 0.15s;
@@ -133,11 +155,10 @@
         .tpl-chip:hover {
             background: #70523e;
             color: #fff;
-            border-color: #70523e;
         }
         .tpl-edit-btn, .tpl-del-btn {
             font-size: 10px;
-            padding: 0 3px;
+            padding: 0 2px;
             color: #999;
         }
         .tpl-edit-btn:hover { color: #a07855; }
@@ -146,26 +167,33 @@
         .add-tpl-btn {
             background: #e8dfd8;
             border: none;
-            border-radius: 20px;
-            padding: 5px 10px;
-            font-size: 12px;
+            border-radius: 18px;
+            padding: 4px 8px;
+            font-size: 11px;
             color: #70523e;
             cursor: pointer;
         }
 
-        /* 入力エリア */
+        /* 入力フォーム */
         .input-group {
             display: flex;
+            flex-direction: column;
             gap: 6px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            margin-bottom: 16px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid #ebe2d8;
+        }
+        .input-row-1 {
+            display: flex;
+            gap: 6px;
         }
         input[type="text"] {
             flex: 1;
-            min-width: 150px;
-            padding: 10px 14px;
+            padding: 9px 12px;
             border: 1.5px solid #e8dfd8;
-            border-radius: 14px;
+            border-radius: 12px;
             font-size: 13px;
             outline: none;
             background: #faf6f0;
@@ -175,62 +203,67 @@
             border-color: #a07855;
             background: #ffffff;
         }
+        .input-row-2 {
+            display: flex;
+            gap: 6px;
+        }
         select {
-            padding: 10px 8px;
+            padding: 8px 10px;
             border: 1.5px solid #e8dfd8;
-            border-radius: 14px;
-            font-size: 12px;
+            border-radius: 12px;
+            font-size: 11.5px;
             background: #faf6f0;
             color: #5c4333;
             outline: none;
             cursor: pointer;
         }
         .add-btn {
-            padding: 10px 16px;
+            flex: 1;
+            padding: 8px 14px;
             background-color: #70523e;
             color: white;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: bold;
         }
         .add-btn:hover { background-color: #5b402e; }
 
-        /* カテゴリ・カード設定 */
+        /* タスクカード */
         .task-card {
             background: #faf6f0;
             border-radius: 18px;
-            padding: 14px;
+            padding: 12px;
             border: 1px solid #ebe2d8;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .category-title {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: bold;
             color: #70523e;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 4px;
         }
 
-        /* タブ切り替えボタン */
+        /* タブ */
         .tab-switch {
             display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 4px;
+            margin-bottom: 10px;
             background: #e8dfd8;
             padding: 3px;
-            border-radius: 14px;
+            border-radius: 12px;
         }
         .tab-btn {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 6px 10px;
-            border-radius: 11px;
-            font-size: 12px;
+            padding: 5px 8px;
+            border-radius: 9px;
+            font-size: 11.5px;
             font-weight: bold;
             color: #8c6d58;
             cursor: pointer;
@@ -239,7 +272,6 @@
         .tab-btn.active {
             background: #ffffff;
             color: #70523e;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
 
         /* タスクリスト */
@@ -247,28 +279,54 @@
         .hidden-list { display: none; }
         li {
             background: #ffffff;
-            padding: 8px 12px;
+            padding: 8px 10px;
             margin-bottom: 6px;
             border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid #f0e8e0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            font-size: 12.5px;
             transition: all 0.2s;
         }
-        li span {
+        li span.text {
             cursor: pointer;
             flex: 1;
-            font-size: 13px;
             word-break: break-all;
         }
+        .day-badge {
+            font-size: 10px;
+            background: #e8dfd8;
+            color: #70523e;
+            padding: 2px 6px;
+            border-radius: 8px;
+            margin-right: 6px;
+            font-weight: bold;
+        }
+
+        /* 達成済みデザイン */
         li.completed {
             background: #f5f0eb;
             text-decoration: line-through;
             color: #b0a398;
             border-color: #e8dfd8;
         }
+
+        /* 4時時点での未達成（持ち越し）デザイン */
+        li.missed {
+            background: #fff5f5;
+            border: 1.5px solid #f5c6cb;
+        }
+        .missed-badge {
+            font-size: 9.5px;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 5px;
+            border-radius: 6px;
+            margin-right: 6px;
+            font-weight: bold;
+        }
+
         .delete-btn {
             background-color: transparent;
             color: #c4aead;
@@ -280,50 +338,61 @@
         }
         .delete-btn:hover { color: #d63031; }
 
-        /* タイムスケジュール メモ */
+        /* スケジュール メモ */
         .schedule-memo-box {
-            margin-top: 10px;
             background: #faf6f0;
             border-radius: 18px;
-            padding: 14px;
+            padding: 12px;
             border: 1px solid #ebe2d8;
+            margin-bottom: 12px;
         }
         .memo-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #70523e;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-        }
-        .memo-saved-text {
-            font-size: 10px;
-            color: #a07855;
-            font-weight: normal;
         }
         textarea {
             width: 100%;
-            height: 90px;
+            height: 75px;
             border: 1.5px solid #e8dfd8;
             border-radius: 12px;
-            padding: 10px;
+            padding: 8px;
             font-size: 12px;
             color: #4a3b32;
             background: #ffffff;
             resize: vertical;
             outline: none;
             font-family: inherit;
-            line-height: 1.5;
         }
-        textarea:focus { border-color: #a07855; }
+
+        /* デモ通知ボタン */
+        .demo-bar {
+            text-align: center;
+        }
+        .demo-btn {
+            background: #f0e8e0;
+            border: none;
+            color: #8c6d58;
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .demo-btn:hover { background: #e8dfd8; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>à faire ☕</h1>
+        <div class="header-top">
+            <h1>une liste de tâches ☕</h1>
+            <div class="streak-badge" id="streakDisplay">🔥 0日連続</div>
+        </div>
 
-        <!-- 達成率表示 -->
+        <!-- 達成率 -->
         <div class="progress-box">
             <div class="progress-info">
                 <span id="progressMsg">☕ à votre rythme</span>
@@ -336,10 +405,10 @@
 
         <!-- 動物の褒め言葉エリア -->
         <div class="pet-praise" id="praiseBox">
-            🐶「今日もゆっくりがんばろうね」
+            🐶「今日もマイペースにいこうね」
         </div>
 
-        <!-- テンプレートエリア -->
+        <!-- テンプレートエリア（日本語対応） -->
         <div class="template-section">
             <div class="template-header">
                 <span class="template-title">✨ modèles</span>
@@ -348,15 +417,28 @@
             <div class="template-buttons" id="templateList"></div>
         </div>
 
-        <!-- タスク入力 -->
+        <!-- 入力フォーム -->
         <div class="input-group">
-            <input type="text" id="taskInput" placeholder="Nouveau projet...">
-            <select id="categorySelect">
-                <option value="daily">☀️ au quotidien</option>
-                <option value="weekly">📅 jours spécifiques</option>
-                <option value="weekend">🎈 le week-end</option>
-            </select>
-            <button class="add-btn" onclick="addTask()">ajouter</button>
+            <div class="input-row-1">
+                <input type="text" id="taskInput" placeholder="新しいタスク...">
+            </div>
+            <div class="input-row-2">
+                <select id="categorySelect" onchange="handleCategoryChange(this.value)">
+                    <option value="daily">☀️ au quotidien</option>
+                    <option value="weekly">📅 jours spécifiques</option>
+                    <option value="weekend">🎈 le week-end</option>
+                </select>
+                <select id="daySelect" style="display: none;">
+                    <option value="月">月曜日 (Lun)</option>
+                    <option value="火">火曜日 (Mar)</option>
+                    <option value="水">水曜日 (Mer)</option>
+                    <option value="木">木曜日 (Jeu)</option>
+                    <option value="金">金曜日 (Ven)</option>
+                    <option value="土">土曜日 (Sam)</option>
+                    <option value="日">日曜日 (Dim)</option>
+                </select>
+                <button class="add-btn" onclick="addTask()">ajouter</button>
+            </div>
         </div>
 
         <!-- ① 毎日すること -->
@@ -365,7 +447,7 @@
             <ul id="dailyList"></ul>
         </div>
 
-        <!-- ② 切り替えエリア（特定の曜日 / 週末） -->
+        <!-- ② 特定の曜日 / 週末 -->
         <div class="task-card">
             <div class="tab-switch">
                 <button class="tab-btn active" id="tabWeekly" onclick="switchTab('weekly')">📅 jours spécifiques</button>
@@ -379,16 +461,23 @@
         <div class="schedule-memo-box">
             <div class="memo-title">
                 <span>⏳ mon planning</span>
-                <span class="memo-saved-text" id="memoSavedStatus">enregistré</span>
+                <span style="font-weight:normal; font-size:10px; color:#a07855;" id="memoSavedStatus">自動保存完了</span>
             </div>
-            <textarea id="scheduleMemo" placeholder="08:00 Café&#10;10:00 Reading&#10;14:00 Shopping" oninput="saveMemo()"></textarea>
+            <textarea id="scheduleMemo" placeholder="08:00 カフェ&#10;10:00 読書&#10;14:00 お買い物" oninput="saveMemo()"></textarea>
+        </div>
+
+        <!-- スマホ通知デモボタン -->
+        <div class="demo-bar">
+            <button class="demo-btn" onclick="triggerNotificationDemo()">🔔 通知デモを試す</button>
         </div>
     </div>
 
     <script>
-        let templates = ["☕ Café time", "🧹 Ménage", "📖 Lecture"];
+        // --- データ管理 ---
+        let tasks = JSON.parse(localStorage.getItem('app_tasks_v3')) || [];
+        let templates = JSON.parse(localStorage.getItem('app_templates')) || ["☕ カフェタイム", "🧹 お部屋掃除", "📖 読書・勉強"];
+        let streakData = JSON.parse(localStorage.getItem('app_streak_data')) || { count: 0, lastLogicalDate: "" };
         let isEditMode = false;
-        let currentTab = 'weekly';
 
         const praises = [
             "🐶『すごーい！ひとつクリアだね！』",
@@ -399,9 +488,189 @@
             "🐼『えらいっ！自分にご褒美あげてね！』"
         ];
 
-        renderTemplates();
-        loadMemo();
+        const streakMilestones = {
+            1: "🐶『1日達成！幸先の良いスタートだね！』",
+            2: "🐱『2日連続！その調子で続けていこう！』",
+            3: "🐻『3日連続！素晴らしい習慣になってきたよ！』",
+            5: "🐰『5日連続！！すごすぎる！大天才！』",
+            10: "🐼『10日連続！！！神レベルの継続力！』",
+            20: "🐥『20日連続！！！！自分を誇ってね！』",
+            30: "🦁『30日連続！！！！！もはやマスターだよ！』"
+        };
 
+        // --- 4:00 AM 基準の日付取得 ---
+        function getLogicalDate(dateObj = new Date()) {
+            const d = new Date(dateObj.getTime() - 4 * 60 * 60 * 1000);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // --- 4時またぎのリセットチェック ---
+        function check4AMReset() {
+            const currentLogical = getLogicalDate();
+            const lastLogical = localStorage.getItem('app_last_logical');
+
+            if (lastLogical && lastLogical !== currentLogical) {
+                // 朝4時を跨いだ処理
+                tasks.forEach(t => {
+                    if (t.completed) {
+                        t.completed = false; // 達成取り消し
+                        t.isMissed = false;
+                    } else {
+                        t.isMissed = true; // 未達成として目立たせる
+                    }
+                });
+                saveTasks();
+            }
+            localStorage.setItem('app_last_logical', currentLogical);
+        }
+
+        // --- 初期化 ---
+        check4AMReset();
+        renderTemplates();
+        renderTasks();
+        loadMemo();
+        updateStreakUI();
+
+        // --- タスク追加・描画 ---
+        function handleCategoryChange(val) {
+            document.getElementById('daySelect').style.display = (val === 'weekly') ? 'inline-block' : 'none';
+        }
+
+        function addTask(textValue = null) {
+            const input = document.getElementById('taskInput');
+            const text = textValue || input.value.trim();
+            if (!text) return;
+
+            const category = document.getElementById('categorySelect').value;
+            const dayOfWeek = document.getElementById('daySelect').value;
+
+            const newTask = {
+                id: Date.now(),
+                text: text,
+                category: category,
+                dayOfWeek: (category === 'weekly') ? dayOfWeek : '',
+                completed: false,
+                isMissed: false
+            };
+
+            tasks.push(newTask);
+            saveTasks();
+            renderTasks();
+
+            if (!textValue) input.value = '';
+            if (category === 'weekly') switchTab('weekly');
+            if (category === 'weekend') switchTab('weekend');
+        }
+
+        function renderTasks() {
+            const dailyList = document.getElementById('dailyList');
+            const weeklyList = document.getElementById('weeklyList');
+            const weekendList = document.getElementById('weekendList');
+
+            dailyList.innerHTML = '';
+            weeklyList.innerHTML = '';
+            weekendList.innerHTML = '';
+
+            // 曜日順に並べ替え
+            const dayOrder = { '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6, '日': 7 };
+            tasks.sort((a, b) => (dayOrder[a.dayOfWeek] || 0) - (dayOrder[b.dayOfWeek] || 0));
+
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                if (task.completed) li.classList.add('completed');
+                if (task.isMissed) li.classList.add('missed');
+
+                let dayBadgeHtml = task.dayOfWeek ? `<span class="day-badge">${task.dayOfWeek}</span>` : '';
+                let missedBadgeHtml = task.isMissed ? `<span class="missed-badge">⚠️ 未達成</span>` : '';
+
+                li.innerHTML = `
+                    ${missedBadgeHtml}
+                    ${dayBadgeHtml}
+                    <span class="text" onclick="toggleTask(${task.id})">${task.text}</span>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
+                `;
+
+                if (task.category === 'daily') dailyList.appendChild(li);
+                else if (task.category === 'weekly') weeklyList.appendChild(li);
+                else if (task.category === 'weekend') weekendList.appendChild(li);
+            });
+
+            updateProgress();
+        }
+
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                if (task.completed) task.isMissed = false; // 達成したら未達成フラグ解除
+                saveTasks();
+                renderTasks();
+
+                if (task.completed) {
+                    checkStreakOnTaskComplete();
+                }
+            }
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('app_tasks_v3', JSON.stringify(tasks));
+        }
+
+        // --- 連続達成カウント ---
+        function checkStreakOnTaskComplete() {
+            const todayLogical = getLogicalDate();
+            const dailyTasks = tasks.filter(t => t.category === 'daily');
+
+            if (dailyTasks.length > 0 && dailyTasks.every(t => t.completed)) {
+                if (streakData.lastLogicalDate !== todayLogical) {
+                    streakData.count += 1;
+                    streakData.lastLogicalDate = todayLogical;
+                    localStorage.setItem('app_streak_data', JSON.stringify(streakData));
+                    updateStreakUI();
+
+                    // キリのいい数字で特別褒め言葉
+                    if (streakMilestones[streakData.count]) {
+                        document.getElementById('praiseBox').innerText = streakMilestones[streakData.count];
+                        return;
+                    }
+                }
+            }
+
+            // 通常の褒め言葉
+            const randomPraise = praises[Math.floor(Math.random() * praises.length)];
+            document.getElementById('praiseBox').innerText = randomPraise;
+        }
+
+        function updateStreakUI() {
+            document.getElementById('streakDisplay').innerText = `🔥 ${streakData.count}日連続`;
+        }
+
+        // --- 達成率更新 ---
+        function updateProgress() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('percentText').innerText = percent + '%';
+
+            const msgEl = document.getElementById('progressMsg');
+            if (total === 0) msgEl.innerText = '☕ à votre rythme';
+            else if (percent === 100) msgEl.innerText = '🎉 tout est fait !';
+            else if (percent >= 50) msgEl.innerText = '✨ à mi-chemin !';
+            else msgEl.innerText = '🐾 un pas à la fois';
+        }
+
+        // --- テンプレート編集 ---
         function renderTemplates() {
             const container = document.getElementById('templateList');
             container.innerHTML = '';
@@ -409,7 +678,6 @@
             templates.forEach((tpl, index) => {
                 const chip = document.createElement('div');
                 chip.className = 'tpl-chip';
-                
                 if (isEditMode) {
                     chip.innerHTML = `
                         <span>${tpl}</span>
@@ -438,9 +706,10 @@
 
         function addNewTemplate() {
             const input = document.getElementById('taskInput');
-            const text = input.value.trim() || prompt('Nom du modèle:');
+            const text = input.value.trim() || prompt('新しいテンプレート名:');
             if (text) {
                 templates.push(text);
+                saveTemplates();
                 input.value = '';
                 renderTemplates();
             }
@@ -448,9 +717,10 @@
 
         function editTemplate(index, event) {
             event.stopPropagation();
-            const newText = prompt('Modifier:', templates[index]);
+            const newText = prompt('テンプレート変更:', templates[index]);
             if (newText && newText.trim()) {
                 templates[index] = newText.trim();
+                saveTemplates();
                 renderTemplates();
             }
         }
@@ -458,40 +728,16 @@
         function deleteTemplate(index, event) {
             event.stopPropagation();
             templates.splice(index, 1);
+            saveTemplates();
             renderTemplates();
         }
 
-        function addTask(textValue = null) {
-            const input = document.getElementById('taskInput');
-            const categorySelect = document.getElementById('categorySelect');
-            const text = textValue || input.value.trim();
-            if (!text) return;
-
-            const category = categorySelect.value;
-            let targetListId = 'dailyList';
-            if (category === 'weekly') {
-                targetListId = 'weeklyList';
-                switchTab('weekly');
-            }
-            if (category === 'weekend') {
-                targetListId = 'weekendList';
-                switchTab('weekend');
-            }
-
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span onclick="toggleTask(this)">${text}</span>
-                <button class="delete-btn" onclick="deleteTask(this)">✕</button>
-            `;
-            document.getElementById(targetListId).appendChild(li);
-
-            if (!textValue) input.value = '';
-
-            updateProgress();
+        function saveTemplates() {
+            localStorage.setItem('app_templates', JSON.stringify(templates));
         }
 
+        // --- タブ切り替え ---
         function switchTab(tab) {
-            currentTab = tab;
             const weeklyList = document.getElementById('weeklyList');
             const weekendList = document.getElementById('weekendList');
             const tabWeekly = document.getElementById('tabWeekly');
@@ -510,64 +756,40 @@
             }
         }
 
-        function toggleTask(span) {
-            const li = span.parentElement;
-            li.classList.toggle('completed');
-
-            if (li.classList.contains('completed')) {
-                const randomPraise = praises[Math.floor(Math.random() * praises.length)];
-                const praiseBox = document.getElementById('praiseBox');
-                praiseBox.innerText = randomPraise;
-                praiseBox.style.transform = 'scale(1.03)';
-                setTimeout(() => praiseBox.style.transform = 'scale(1)', 200);
-            }
-
-            updateProgress();
-        }
-
-        function deleteTask(btn) {
-            btn.parentElement.remove();
-            updateProgress();
-        }
-
-        function updateProgress() {
-            const allTasks = document.querySelectorAll('ul li');
-            const completedTasks = document.querySelectorAll('ul li.completed');
-
-            const total = allTasks.length;
-            const completed = completedTasks.length;
-
-            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-
-            document.getElementById('progressBar').style.width = percent + '%';
-            document.getElementById('percentText').innerText = percent + '%';
-
-            const msgEl = document.getElementById('progressMsg');
-            if (total === 0) {
-                msgEl.innerText = '☕ à votre rythme';
-            } else if (percent === 100) {
-                msgEl.innerText = '🎉 tout est fait !';
-            } else if (percent >= 50) {
-                msgEl.innerText = '✨ à mi-chemin !';
-            } else {
-                msgEl.innerText = '🐾 un pas à la fois';
-            }
-        }
-
+        // --- メモ自動保存 ---
         function saveMemo() {
             const memoText = document.getElementById('scheduleMemo').value;
             localStorage.setItem('todo_schedule_memo', memoText);
-            
             const status = document.getElementById('memoSavedStatus');
             status.innerText = '...';
-            setTimeout(() => { status.innerText = 'enregistré'; }, 400);
+            setTimeout(() => { status.innerText = '自動保存完了'; }, 400);
         }
 
         function loadMemo() {
             const saved = localStorage.getItem('todo_schedule_memo');
-            if (saved !== null) {
-                document.getElementById('scheduleMemo').value = saved;
+            if (saved !== null) document.getElementById('scheduleMemo').value = saved;
+        }
+
+        // --- スマホ通知デモ機能 ---
+        function triggerNotificationDemo() {
+            if (!("Notification" in window)) {
+                alert("お使いのブラウザは通知に対応していません。");
+                return;
             }
+
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    const days = ["日", "月", "火", "水", "木", "金", "土"];
+                    const todayName = days[new Date().getDay()];
+                    
+                    new Notification("une liste de tâches ☕", {
+                        body: `🐾 今日(${todayName}曜日)のタスクがあるよ！一緒に楽しくがんばろうね♪`,
+                        icon: "https://fav.farm/☕"
+                    });
+                } else {
+                    alert("通知が拒否されています。ブラウザの設定で通知を許可してください。");
+                }
+            });
         }
     </script>
 </body>
