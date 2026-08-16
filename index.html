@@ -5,7 +5,7 @@
     <!-- 検索エンジンにヒットしない設定 -->
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>une liste de tâches ☕</title>
+    <title>liste de tâches ☕</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -33,6 +33,31 @@
         @keyframes popIn {
             0% { transform: scale(0.92) translateY(20px); opacity: 0; }
             100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* アプリ内トースト通知 */
+        .toast-notification {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #70523e;
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(112, 82, 62, 0.25);
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 88%;
+            max-width: 380px;
+            text-align: center;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+        .toast-notification.show {
+            top: 20px;
         }
 
         .header-top {
@@ -108,7 +133,7 @@
             transition: transform 0.2s;
         }
 
-        /* テンプレートエリア（日本語対応） */
+        /* テンプレートエリア */
         .template-section {
             margin-bottom: 14px;
             background: #faf6f0;
@@ -386,9 +411,12 @@
     </style>
 </head>
 <body>
+    <!-- アプリ内トースト通知 -->
+    <div id="toastNotification" class="toast-notification"></div>
+
     <div class="container">
         <div class="header-top">
-            <h1>une liste de tâches ☕</h1>
+            <h1>liste de tâches ☕</h1>
             <div class="streak-badge" id="streakDisplay">🔥 0日連続</div>
         </div>
 
@@ -408,7 +436,7 @@
             🐶「今日もマイペースにいこうね」
         </div>
 
-        <!-- テンプレートエリア（日本語対応） -->
+        <!-- テンプレートエリア -->
         <div class="template-section">
             <div class="template-header">
                 <span class="template-title">✨ modèles</span>
@@ -473,6 +501,11 @@
     </div>
 
     <script>
+        // --- ブラウザストレージの永続化要請（自動削除の防止） ---
+        if (navigator.storage && navigator.storage.persist) {
+            navigator.storage.persist();
+        }
+
         // --- データ管理 ---
         let tasks = JSON.parse(localStorage.getItem('app_tasks_v3')) || [];
         let templates = JSON.parse(localStorage.getItem('app_templates')) || ["☕ カフェタイム", "🧹 お部屋掃除", "📖 読書・勉強"];
@@ -513,13 +546,12 @@
             const lastLogical = localStorage.getItem('app_last_logical');
 
             if (lastLogical && lastLogical !== currentLogical) {
-                // 朝4時を跨いだ処理
                 tasks.forEach(t => {
                     if (t.completed) {
-                        t.completed = false; // 達成取り消し
+                        t.completed = false;
                         t.isMissed = false;
                     } else {
-                        t.isMissed = true; // 未達成として目立たせる
+                        t.isMissed = true;
                     }
                 });
                 saveTasks();
@@ -574,7 +606,6 @@
             weeklyList.innerHTML = '';
             weekendList.innerHTML = '';
 
-            // 曜日順に並べ替え
             const dayOrder = { '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6, '日': 7 };
             tasks.sort((a, b) => (dayOrder[a.dayOfWeek] || 0) - (dayOrder[b.dayOfWeek] || 0));
 
@@ -605,7 +636,7 @@
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.completed = !task.completed;
-                if (task.completed) task.isMissed = false; // 達成したら未達成フラグ解除
+                if (task.completed) task.isMissed = false;
                 saveTasks();
                 renderTasks();
 
@@ -637,7 +668,6 @@
                     localStorage.setItem('app_streak_data', JSON.stringify(streakData));
                     updateStreakUI();
 
-                    // キリのいい数字で特別褒め言葉
                     if (streakMilestones[streakData.count]) {
                         document.getElementById('praiseBox').innerText = streakMilestones[streakData.count];
                         return;
@@ -645,7 +675,6 @@
                 }
             }
 
-            // 通常の褒め言葉
             const randomPraise = praises[Math.floor(Math.random() * praises.length)];
             document.getElementById('praiseBox').innerText = randomPraise;
         }
@@ -752,7 +781,7 @@
                 weeklyList.classList.add('hidden-list');
                 weekendList.classList.remove('hidden-list');
                 tabWeekly.classList.remove('active');
-                tabWeekend.classList.add('active');
+                tabWeekend.classList.remove('active');
             }
         }
 
@@ -770,26 +799,41 @@
             if (saved !== null) document.getElementById('scheduleMemo').value = saved;
         }
 
-        // --- スマホ通知デモ機能 ---
-        function triggerNotificationDemo() {
-            if (!("Notification" in window)) {
-                alert("お使いのブラウザは通知に対応していません。");
-                return;
-            }
+        // --- アプリ内トースト通知の表示 ---
+        function showToast(text) {
+            const toast = document.getElementById('toastNotification');
+            toast.innerText = text;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4500);
+        }
 
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    const days = ["日", "月", "火", "水", "木", "金", "土"];
-                    const todayName = days[new Date().getDay()];
-                    
-                    new Notification("une liste de tâches ☕", {
-                        body: `🐾 今日(${todayName}曜日)のタスクがあるよ！一緒に楽しくがんばろうね♪`,
-                        icon: "https://fav.farm/☕"
-                    });
-                } else {
-                    alert("通知が拒否されています。ブラウザの設定で通知を許可してください。");
-                }
-            });
+        // --- スマホ通知デモ機能（iOS・プライベートモード対応） ---
+        function triggerNotificationDemo() {
+            const days = ["日", "月", "火", "水", "木", "金", "土"];
+            const todayName = days[new Date().getDay()];
+            const demoMsg = `🐾 今日(${todayName}曜日)のタスクがあるよ！一緒に楽しくがんばろうね♪`;
+
+            // 1. どんな環境でも必ず画面上に可愛いトースト通知を表示（体験用）
+            showToast(`☕ liste de tâches\n${demoMsg}`);
+
+            // 2. Web Notification API（システム通知）が利用可能な場合
+            if ("Notification" in window && Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification("liste de tâches ☕", {
+                            body: demoMsg,
+                            icon: "https://fav.farm/☕"
+                        });
+                    }
+                });
+            } else {
+                // iPhoneのSafari / プライベートモード等で端末通知が使えない場合の案内
+                setTimeout(() => {
+                    alert("💡 iPhoneでシステム通知を受け取るには：\n\n1. Safariの「通常モード」で開く\n2. 下部の共有ボタン（□↑）から「ホーム画面に追加」する\n\n※プライベートモードや普通のWebタブでは、iPhoneの仕様により端末への通知が制限されます。");
+                }, 800);
+            }
         }
     </script>
 </body>
