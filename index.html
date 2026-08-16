@@ -456,15 +456,7 @@
                     <option value="weekly">📅 jours spécifiques</option>
                     <option value="weekend">🎈 le week-end</option>
                 </select>
-                <select id="daySelect" style="display: none;">
-                    <option value="月">月曜日 (Lun)</option>
-                    <option value="火">火曜日 (Mar)</option>
-                    <option value="水">水曜日 (Mer)</option>
-                    <option value="木">木曜日 (Jeu)</option>
-                    <option value="金">金曜日 (Ven)</option>
-                    <option value="土">土曜日 (Sam)</option>
-                    <option value="日">日曜日 (Dim)</option>
-                </select>
+                <select id="daySelect" style="display: none;"></select>
                 <button class="add-btn" onclick="addTask()">ajouter</button>
             </div>
         </div>
@@ -496,17 +488,15 @@
 
         <!-- スマホ通知デモボタン -->
         <div class="demo-bar">
-            <button class="demo-btn" onclick="triggerNotificationDemo()">🔔 通知デモを試す</button>
+            <button class="demo-btn" onclick="triggerNotificationDemo()">🔔 23:00通知デモを試す</button>
         </div>
     </div>
 
     <script>
-        // --- ブラウザストレージの永続化要請（自動削除の防止） ---
         if (navigator.storage && navigator.storage.persist) {
             navigator.storage.persist();
         }
 
-        // --- データ管理 ---
         let tasks = JSON.parse(localStorage.getItem('app_tasks_v3')) || [];
         let templates = JSON.parse(localStorage.getItem('app_templates')) || ["☕ カフェタイム", "🧹 お部屋掃除", "📖 読書・勉強"];
         let streakData = JSON.parse(localStorage.getItem('app_streak_data')) || { count: 0, lastLogicalDate: "" };
@@ -531,7 +521,6 @@
             30: "🦁『30日連続！！！！！もはやマスターだよ！』"
         };
 
-        // --- 4:00 AM 基準の日付取得 ---
         function getLogicalDate(dateObj = new Date()) {
             const d = new Date(dateObj.getTime() - 4 * 60 * 60 * 1000);
             const yyyy = d.getFullYear();
@@ -540,7 +529,6 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        // --- 4時またぎのリセットチェック ---
         function check4AMReset() {
             const currentLogical = getLogicalDate();
             const lastLogical = localStorage.getItem('app_last_logical');
@@ -559,16 +547,39 @@
             localStorage.setItem('app_last_logical', currentLogical);
         }
 
-        // --- 初期化 ---
         check4AMReset();
         renderTemplates();
         renderTasks();
         loadMemo();
         updateStreakUI();
+        handleCategoryChange('daily');
 
-        // --- タスク追加・描画 ---
+        // 定期的に23:00通知チェック（1分ごと）
+        setInterval(check23PMNotification, 60000);
+
+        // --- カテゴリ変更時の曜日選択制御 ---
         function handleCategoryChange(val) {
-            document.getElementById('daySelect').style.display = (val === 'weekly') ? 'inline-block' : 'none';
+            const daySelect = document.getElementById('daySelect');
+            if (val === 'weekly') {
+                daySelect.style.display = 'inline-block';
+                daySelect.innerHTML = `
+                    <option value="月">月曜日 (Lun)</option>
+                    <option value="火">火曜日 (Mar)</option>
+                    <option value="水">水曜日 (Mer)</option>
+                    <option value="木">木曜日 (Jeu)</option>
+                    <option value="金">金曜日 (Ven)</option>
+                    <option value="土">土曜日 (Sam)</option>
+                    <option value="日">日曜日 (Dim)</option>
+                `;
+            } else if (val === 'weekend') {
+                daySelect.style.display = 'inline-block';
+                daySelect.innerHTML = `
+                    <option value="土">土曜日 (Sam)</option>
+                    <option value="日">日曜日 (Dim)</option>
+                `;
+            } else {
+                daySelect.style.display = 'none';
+            }
         }
 
         function addTask(textValue = null) {
@@ -583,7 +594,7 @@
                 id: Date.now(),
                 text: text,
                 category: category,
-                dayOfWeek: (category === 'weekly') ? dayOfWeek : '',
+                dayOfWeek: (category === 'weekly' || category === 'weekend') ? dayOfWeek : '',
                 completed: false,
                 isMissed: false
             };
@@ -656,7 +667,6 @@
             localStorage.setItem('app_tasks_v3', JSON.stringify(tasks));
         }
 
-        // --- 連続達成カウント ---
         function checkStreakOnTaskComplete() {
             const todayLogical = getLogicalDate();
             const dailyTasks = tasks.filter(t => t.category === 'daily');
@@ -683,7 +693,6 @@
             document.getElementById('streakDisplay').innerText = `🔥 ${streakData.count}日連続`;
         }
 
-        // --- 達成率更新 ---
         function updateProgress() {
             const total = tasks.length;
             const completed = tasks.filter(t => t.completed).length;
@@ -699,7 +708,6 @@
             else msgEl.innerText = '🐾 un pas à la fois';
         }
 
-        // --- テンプレート編集 ---
         function renderTemplates() {
             const container = document.getElementById('templateList');
             container.innerHTML = '';
@@ -765,7 +773,6 @@
             localStorage.setItem('app_templates', JSON.stringify(templates));
         }
 
-        // --- タブ切り替え ---
         function switchTab(tab) {
             const weeklyList = document.getElementById('weeklyList');
             const weekendList = document.getElementById('weekendList');
@@ -781,11 +788,10 @@
                 weeklyList.classList.add('hidden-list');
                 weekendList.classList.remove('hidden-list');
                 tabWeekly.classList.remove('active');
-                tabWeekend.classList.remove('active');
+                tabWeekend.classList.add('active');
             }
         }
 
-        // --- メモ自動保存 ---
         function saveMemo() {
             const memoText = document.getElementById('scheduleMemo').value;
             localStorage.setItem('todo_schedule_memo', memoText);
@@ -799,7 +805,6 @@
             if (saved !== null) document.getElementById('scheduleMemo').value = saved;
         }
 
-        // --- アプリ内トースト通知の表示 ---
         function showToast(text) {
             const toast = document.getElementById('toastNotification');
             toast.innerText = text;
@@ -809,30 +814,80 @@
             }, 4500);
         }
 
-        // --- スマホ通知デモ機能（iOS・プライベートモード対応） ---
-        function triggerNotificationDemo() {
+        // --- 本日やるべき未達成タスクの取得 ---
+        function getUncompletedTasksForToday() {
             const days = ["日", "月", "火", "水", "木", "金", "土"];
             const todayName = days[new Date().getDay()];
-            const demoMsg = `🐾 今日(${todayName}曜日)のタスクがあるよ！一緒に楽しくがんばろうね♪`;
 
-            // 1. どんな環境でも必ず画面上に可愛いトースト通知を表示（体験用）
-            showToast(`☕ liste de tâches\n${demoMsg}`);
+            return tasks.filter(t => {
+                if (t.completed) return false;
+                if (t.category === 'daily') return true;
+                if (t.category === 'weekly' && t.dayOfWeek === todayName) return true;
+                if (t.category === 'weekend' && t.dayOfWeek === todayName) return true;
+                return false;
+            });
+        }
 
-            // 2. Web Notification API（システム通知）が利用可能な場合
+        // --- 通知メッセージランダム生成（3種類） ---
+        function getRandomNotificationMsg(taskName) {
+            const templates = [
+                `「${taskName}」をやり忘れているよ！頑張ろう！☕`,
+                `まだ「${taskName}」が終わってないみたい！ファイト〜！✨`,
+                `あともう少し！「${taskName}」をクリアしてスッキリ寝ようね！🌙`
+            ];
+            return templates[Math.floor(Math.random() * templates.length)];
+        }
+
+        // --- 23:00 自動通知チェック ---
+        function check23PMNotification() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const todayStr = getLogicalDate(now);
+
+            // 23:00 に未達成タスクがあるかチェック
+            if (hours === 23 && minutes === 0) {
+                const lastNotified = localStorage.getItem('app_last_notified_23pm');
+                if (lastNotified !== todayStr) {
+                    const uncompleted = getUncompletedTasksForToday();
+                    if (uncompleted.length > 0) {
+                        const targetTaskText = uncompleted[0].text;
+                        const msg = getRandomNotificationMsg(targetTaskText);
+                        sendNotification(msg);
+                        localStorage.setItem('app_last_notified_23pm', todayStr);
+                    }
+                }
+            }
+        }
+
+        function sendNotification(msgText) {
+            showToast(`liste de tâches ☕\n${msgText}`);
+
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("liste de tâches ☕", {
+                    body: msgText,
+                    icon: "https://fav.farm/☕"
+                });
+            }
+        }
+
+        // --- 通知デモ実行 ---
+        function triggerNotificationDemo() {
+            const uncompleted = getUncompletedTasksForToday();
+            let sampleTaskText = "カフェで勉強";
+            
+            if (uncompleted.length > 0) {
+                sampleTaskText = uncompleted[0].text;
+            }
+
+            const msg = getRandomNotificationMsg(sampleTaskText);
+
             if ("Notification" in window && Notification.permission !== "denied") {
                 Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        new Notification("liste de tâches ☕", {
-                            body: demoMsg,
-                            icon: "https://fav.farm/☕"
-                        });
-                    }
+                    sendNotification(msg);
                 });
             } else {
-                // iPhoneのSafari / プライベートモード等で端末通知が使えない場合の案内
-                setTimeout(() => {
-                    alert("💡 iPhoneでシステム通知を受け取るには：\n\n1. Safariの「通常モード」で開く\n2. 下部の共有ボタン（□↑）から「ホーム画面に追加」する\n\n※プライベートモードや普通のWebタブでは、iPhoneの仕様により端末への通知が制限されます。");
-                }, 800);
+                sendNotification(msg);
             }
         }
     </script>
